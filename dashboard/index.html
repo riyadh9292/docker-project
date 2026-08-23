@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Metrics Dashboard</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #10151c; color: #e6e6e6; margin: 0; padding: 2rem; }
+  h1 { color: #4fd1c5; }
+  .card { background: #1b232c; border-radius: 8px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; max-width: 480px; }
+  .label { color: #8a97a5; font-size: 0.85rem; text-transform: uppercase; letter-spacing: .05em; }
+  .value { font-size: 1.1rem; margin: .25rem 0 0.75rem 0; }
+  #error { color: #ff6b6b; }
+</style>
+</head>
+<body>
+  <h1>📊 Metrics Dashboard</h1>
+  <p>Live data from the collector service, refreshed every 5 seconds.</p>
+
+  <div class="card" id="status-card">
+    <div class="label">Status</div>
+    <div class="value" id="status">Loading…</div>
+
+    <div class="label">Hostname</div>
+    <div class="value" id="hostname">-</div>
+
+    <div class="label">Uptime (seconds)</div>
+    <div class="value" id="uptime">-</div>
+
+    <div class="label">Disk (used / total GB)</div>
+    <div class="value" id="disk">-</div>
+
+    <div class="label">Memory (used / total MB)</div>
+    <div class="value" id="memory">-</div>
+
+    <div id="error"></div>
+  </div>
+
+  <script>
+    async function refresh() {
+      try {
+        // nginx proxies /api/ to the collector container over the Docker network
+        const res = await fetch('/api/status');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+
+        document.getElementById('status').textContent = 'Connected';
+        document.getElementById('hostname').textContent = data.hostname;
+        document.getElementById('uptime').textContent = data.uptime_seconds;
+        document.getElementById('disk').textContent =
+          `${data.disk.used_gb} / ${data.disk.total_gb}`;
+        document.getElementById('memory').textContent =
+          data.memory ? `${data.memory.used_mb} / ${data.memory.total_mb}` : 'n/a';
+        document.getElementById('error').textContent = '';
+      } catch (err) {
+        document.getElementById('status').textContent = 'Disconnected';
+        document.getElementById('error').textContent = 'Error: ' + err.message;
+      }
+    }
+    refresh();
+    setInterval(refresh, 5000);
+  </script>
+</body>
+</html>

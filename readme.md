@@ -1,0 +1,9 @@
+1. Difference between a Docker image and a container? An image is a read-only, versioned template (filesystem + metadata) built from a Dockerfile — it doesn't run on its own. A container is a running (or stopped) instance of an image, with its own writable layer, process space, and network namespace. One image can produce many independent containers.
+
+2. What does 9090:80 mean? It's a host-to-container port mapping in the form HOST_PORT:CONTAINER_PORT. Traffic hitting the host machine on port 9090 gets forwarded by Docker's network proxy to port 80 inside the container, where nginx is listening. The container's internal port (80) never needs to match the externally exposed one.
+
+3. Why do containers need a Docker network? By default, containers are isolated from each other. A shared user-defined network gives them a private virtual network plus built-in DNS, so they can reach each other by container/service name (e.g., collector) instead of hard-coded, easily-changing IP addresses, while staying isolated from unrelated containers.
+
+4. Why do we use Docker volumes? A container's writable layer is deleted when the container is removed. Volumes are storage managed by Docker outside any single container's lifecycle, so data (here, the collector's access.log) survives container restarts, rebuilds, or replacement, and can optionally be shared between containers.
+
+5. What problem does Docker Compose solve? It replaces a series of manual docker build / docker network create / docker volume create / docker run commands with one declarative YAML file. docker compose up -d builds and starts every service with the right networks, volumes, ports, and dependencies in one command, making the whole multi-container app reproducible and easy to tear down (docker compose down).
