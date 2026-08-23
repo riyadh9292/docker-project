@@ -1,6 +1,6 @@
 FROM nginx:alpine
 
-# Replace the default site config with proxy-aware config
+# Replace the default site config with our proxy-aware config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Static dashboard page
