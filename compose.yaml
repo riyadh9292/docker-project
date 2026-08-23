@@ -1,0 +1,32 @@
+services:
+  dashboard:
+    build: ./dashboard
+    image: monitoring-dashboard:latest
+    container_name: dashboard
+    ports:
+      - "9090:80"        # host:container -> browser hits 9090, nginx listens on 80
+    networks:
+      - monitoring-net
+    depends_on:
+      - collector
+    restart: unless-stopped
+
+  collector:
+    build: ./collector
+    image: monitoring-collector:latest
+    container_name: collector
+    expose:
+      - "6000"            # only reachable inside the Docker network, not published to host
+    networks:
+      - monitoring-net
+    volumes:
+      - collector-data:/data
+    restart: unless-stopped
+
+networks:
+  monitoring-net:
+    driver: bridge
+
+volumes:
+  collector-data:
+    driver: local
